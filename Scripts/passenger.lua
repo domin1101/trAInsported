@@ -31,8 +31,8 @@ function randPassengerPos()
 	elseif randPos == 4 then
 		x, y = TILE_SIZE - PASSENGER_IMAGE_WIDTH, TILE_SIZE - PASSENGER_IMAGE_HEIGHT
 	end
-	x = x + math.sin(os.time()+love.timer.getDelta())*15
-	y = y + math.cos(os.time()+love.timer.getDelta())*15
+	x = x + math.sin(os.time()--[[+ love.timer.getDelta()]])*15
+	y = y + math.cos(os.time()--[[+love.timer.getDelta()]])*15
 	return x, y
 end
 
@@ -132,7 +132,7 @@ function passenger.new( givenX, givenY, givenDestX, givenDestY, givenSpeach, for
 					--passengerList[i].image = passengerVIPImage
 					passengerList[i].vip = true
 					passengerList[i].name = passengerList[i].name .. "[VIP]"
-					passengerList[i].markZ = love.timer.getDelta()
+					passengerList[i].markZ = 0 --love.timer.getDelta()
 					passengerList[i].vipTime = math.sqrt((passengerList[i].tileX-passengerList[i].destX)^2 + (passengerList[i].tileY-passengerList[i].destY)^2)*10 + MIN_VIP_TIME
 					passengerList[i].maxVipTime = passengerList[i].vipTime
 					if not DEDICATED then

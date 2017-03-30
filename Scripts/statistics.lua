@@ -1,6 +1,6 @@
 local statistics = {}
 
-local aiStats = {}
+aiStats = {}
 
 
 if not DEDICATED then
@@ -15,7 +15,7 @@ local statBoxPositive = nil
 local statBoxNegative = nil
 
 function statistics.setAIName(aiID, name, owner)
-	print("OWNER:", aiID, name, owner)
+	--print("OWNER:", aiID, name, owner)
 	if aiStats[aiID] then
 		aiStats[aiID].name = name or "Unknown"
 		aiStats[aiID].owner = owner or "Unknown"
@@ -149,14 +149,14 @@ function statistics.print()
 			t = simulationMap.time
 		end
 		
-		print("Time taken: " .. secondsToReadableTime(t))		-- print in readable format
+		--print("Time taken: " .. secondsToReadableTime(t))		-- print in readable format
 		
 		for i = 1,#aiStats do
-			print(aiStats[i].name .. ":")
-			print("\tPicked up " .. aiStats[i].pPickedUp .. " passengers.")
-			print("\tDropped off " .. aiStats[i].pDroppedOff .. " passengers.")
-			print("\tBrought " .. aiStats[i].pTransported .. " passengers to their destinations.")
-			print("\tCash: " .. aiStats[i].money)
+			--print(aiStats[i].name .. ":")
+			--print("\tPicked up " .. aiStats[i].pPickedUp .. " passengers.")
+			--print("\tDropped off " .. aiStats[i].pDroppedOff .. " passengers.")
+			--print("\tBrought " .. aiStats[i].pTransported .. " passengers to their destinations.")
+			--print("\tCash: " .. aiStats[i].money)
 			--[[for j = 1,#stats[i].trains do
 				print("\t" .. stats[i].trains[j].name .. ":")
 				print("\t\tPicked up " .. stats[i].trains[j].pPickedUp .. " passengers.")
@@ -351,7 +351,6 @@ function statistics.trainTransportedNum( aiID, ID )
 end
 
 function statistics.generateStatWindows()
-	
 	statistics.clearWindows()
 	allPossibleStats = {}
 	numStats = 0
@@ -614,16 +613,16 @@ function statistics.generateStatWindows()
 	end
 	
 	for k, v in pairs(allPossibleStats) do
-		print(v.title, v.text)
+		--print(v.title, v.text)
 	end
 	
 	--randomize:
 	randomizeTable(allPossibleStats)
-	
+
 	-- determine the winner:
 	if mostTransportedID then
 		winnerID = mostTransportedID		-- write to database
-		print("WINNER FOUND!", winnerID)
+		--print("WINNER FOUND!", winnerID)
 	end
 	--
 

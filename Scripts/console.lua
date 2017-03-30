@@ -48,7 +48,7 @@ function console.add( text, colour )
 		end
 	end
 	
-    print(type(text))
+    --print(type(text))
 	for c in text:gmatch(".") do
 		if c == "\t" then
 			str = str .. "   "
@@ -70,7 +70,7 @@ function console.add( text, colour )
 	
 	consoleStartLine = math.floor(math.max(#consoleLines - console.numLines, 1))
 	if not DEDICATED then
-		print("C:", text)
+		--print("C:", text)
 	end
 	if nextLine then
 		console.add( nextLine, colour )

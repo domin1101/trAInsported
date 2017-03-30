@@ -4,7 +4,7 @@
 ----------------------------------
 
 -- General:
-VERSION = "5.4"
+VERSION = "5.3"
 CONFIG_FILE = "trAInsported.conf"
 DEFAULT_RES_X = 1024
 DEFAULT_RES_Y = 600
@@ -17,6 +17,9 @@ LOVE_VERSION_MINOR = 9
 FALLBACK_SERVER_IP = "127.0.0.1"
 MAIN_SERVER_IP = "trainsportedgame.no-ip.org"
 PORT = 5556
+
+drawMode = false
+DEDICATED = true
 
 if not DEDICATED then
 
@@ -150,7 +153,7 @@ tutDescriptions[4] = [[Be faster! Choose your customers smartly - or watch your 
 TILE_SIZE = 128
 MAX_IMG_SIZE = 5
 MAP_MINIMUM_SIZE = 4
-MAP_MAXIMUM_SIZE = 30
+MAP_MAXIMUM_SIZE = 10
 
 
 -- UI sizes:

@@ -35,14 +35,14 @@ function map.startupProcess()
 	end
 end
 
-function setupMatch( width, height, time, maxTime, gameMode, AIs, region )
+function setupMatch( width, height, time, maxTime, gameMode, AIs, region, individuals)
 
 	winnerID = nil
 	
 	if DEDICATED then		-- let server choose parameteres for game:
 	
-		print("Finding AIs")
-		aiFiles = ai.findAvailableAIs()
+		--print("Finding AIs")
+		aiFiles = {}--ai.findAvailableAIs()
 		
 		local chosenAIs = {}
 	
@@ -50,25 +50,25 @@ function setupMatch( width, height, time, maxTime, gameMode, AIs, region )
 		for k, aiName in pairs(aiFiles) do
 			if aiID <= 4 then
 				chosenAIs[aiID] = aiName
-				print("CHOSE AI:", aiName)
+				--print("CHOSE AI:", aiName)
 				aiID = aiID + 1
 			end
 		end
 
 		curMap = nil
 		
-		width = math.random(MAP_MINIMUM_SIZE, MAP_MAXIMUM_SIZE)
-		height = math.random(MAP_MINIMUM_SIZE, MAP_MAXIMUM_SIZE)
-		time = POSSIBLE_TIMES[math.random(#POSSIBLE_TIMES)]
-		region = POSSIBLE_REGIONS[math.random(#POSSIBLE_REGIONS)]
-		if CL_ROUND_TIME then
-			maxTime = CL_ROUND_TIME
-		else
-			maxTime = FALLBACK_ROUND_TIME
-		end
+		--width = math.random(MAP_MINIMUM_SIZE, MAP_MAXIMUM_SIZE)
+		--height = math.random(MAP_MINIMUM_SIZE, MAP_MAXIMUM_SIZE)
+		--time = POSSIBLE_TIMES[math.random(#POSSIBLE_TIMES)]
+		--region = POSSIBLE_REGIONS[math.random(#POSSIBLE_REGIONS)]
+		--if CL_ROUND_TIME then
+		--	maxTime = CL_ROUND_TIME
+		--else
+		--	maxTime = FALLBACK_ROUND_TIME
+		--end
 		
-		gameMode = 2 --math.random(2)
-		AIs = chosenAIs
+		--gameMode = 2 --math.random(2)
+		--AIs = chosenAIs
 		
 		--IMPORTANT!
 		if connection.thread then
@@ -111,8 +111,8 @@ function setupMatch( width, height, time, maxTime, gameMode, AIs, region )
 	stats.start( #AIs, STARTUP_MONEY )
 	train.init()
 	
-	map.generate(width, height, math.random(1000))
-	print("found AIs:", #AIs)
+	map.generate(width, height, 42)--math.random(1000))
+	--print("found AIs:", #AIs)
 	for i = 1, #AIs do
 		ok, name, owner = pcall(ai.new, AIs[i])
 		if not ok then
@@ -127,7 +127,7 @@ function setupMatch( width, height, time, maxTime, gameMode, AIs, region )
 end
 
 -- called when map has been generated and rendered
-function runMap(restart)
+function runMap(restart, individuals)
 	newMapStarting = false
 	if curMap then
 	
@@ -135,7 +135,7 @@ function runMap(restart)
 	--		console.flush()
 		--end
 		if not challenges.isRunning() then
-			MAX_NUM_TRAINS = math.floor(math.max(curMap.width*curMap.height/10, 1))
+			MAX_NUM_TRAINS = math.floor(math.max(curMap.width*curMap.height/20, 1))
 		end
 		if DEDICATED then
 			MAX_NUM_TRAINS = math.floor(math.max(curMap.width*curMap.height/20, 1))
@@ -159,9 +159,8 @@ function runMap(restart)
 				tutorial.restartEvent()
 			end
 		end
-		
-		
-		ai.init()
+
+		ai.init(individuals)
 		
 		if challengeEvents.mapRenderingDoneCallback then
 			challengeEvents.mapRenderingDoneCallback()
@@ -292,7 +291,7 @@ end
 local mapGenerateThreadNumber = 0
 local mapRenderThreadNumber = 0
 -- Generates a new map. Any old map is dropped.
-function map.generate(width, height, seed, tutorialMap)
+function map.generate(width, height, seed, tutorialMap, individuals)
 	if not map.generating() then
 	
 		if file_exists("log.txt") and DEBUG then
@@ -334,7 +333,7 @@ function map.generate(width, height, seed, tutorialMap)
 		if tutorialMap then
 			print("Generating new tutorial map. Width: " .. tutorialMap.width .. " Height: " .. tutorialMap.height)
 		else
-			print("Generating new map. Width: " .. width .. " Height: " .. height)
+			--print("Generating new map. Width: " .. width .. " Height: " .. height)
 		end
 		-- mapImage, mapShadowImage, mapObjectImage = map.render()
 		--mapGenerateThreadNumber = incrementID(mapGenerateThreadNumber) -- don't generate same name twice!
@@ -379,7 +378,7 @@ function map.generate(width, height, seed, tutorialMap)
 
 			if packet.key == "curMap" then
 				curMap = TSerial.unpack(packet[1])
-				print("new curMap:", curMap)
+				--print("new curMap:", curMap)
 			elseif packet.key == "curMapRailTypes" then
 				curMapRailTypes = TSerial.unpack(packet[1])
 			elseif packet.key == "curMapOccupiedTiles" then
@@ -393,22 +392,22 @@ function map.generate(width, height, seed, tutorialMap)
 					loadingScreen.addSubSection(LNG.load_generating_map, LNG.load_generation[packet[1]])
 				end
 				if packet[1] == "done" then
-					print("Generating done!")
+					--print("Generating done!")
 
 					if loadingScreen then
 						loadingScreen.percentage(LNG.load_generating_map, 100)
 					end
-					map.print("Finished Map:")
+					--map.print("Finished Map:")
 
 					currentlyGeneratingMap = false
 					mapGenerateThread = nil
 
 					if not DEDICATED then
-						print("Start rendering:", curMap )
-						map.render(curMap)
+						--print("Start rendering:", curMap )
+						map.render(curMap, individuals)
 					else
 						sendMap()		-- important! send before running the map!
-						runMap()
+						runMap(nil, individuals)
 					end
 					collectgarbage("collect")
 				end
@@ -1221,7 +1220,7 @@ function map.print(title, m)
 	m = m or curMap
 	title = title or "Current map:"
 	if m then
-		print(title)
+		--print(title)
 		local str = ""
 		for j = 0,m.height+1,1 do
 			str = ""
@@ -1232,7 +1231,7 @@ function map.print(title, m)
 					str = str .. "- "
 				end
 			end
-			print(str)
+			--print(str)
 		end
 	end
 end
@@ -1252,16 +1251,16 @@ if(!(crash == true)){
 crash();
 }
 
--- micha's Übersetzung:
+-- micha's ï¿½bersetzung:
 if not crash then crash() end
 ]]--
 --
 
-function map.render(map)
+function map.render(map, individuals)
 	if not currentlyRenderingMap or map ~= nil then
 		--currentlyRenderingMap = true
 		
-		print("Rendering Map...")
+		--print("Rendering Map...")
 		
 		map = map or curMap
 
@@ -1270,8 +1269,8 @@ function map.render(map)
 			tutorial and tutorial.noTrees,
 			CURRENT_REGION )
 		--currentlyRenderingMap = false
-		print("Rendering done!")
-		print("Rendered map with " .. map.width .. "x" .. map.height .. " tiles.")
+		--print("Rendering done!")
+		--print("Rendered map with " .. map.width .. "x" .. map.height .. " tiles.")
 		attemptingToConnect = false 	-- no longer show loading screen!
 
 		loadingScreen.percentage(LNG.load_rendering_map, 100)
@@ -1295,7 +1294,7 @@ function map.render(map)
 		end
 
 		mapImage, mapShadowImage, mapObjectImage = groundData,shadowData,objectData
-		runMap()	-- start the map!
+		runMap(nil, individuals)	-- start the map!
 	end
 
 	--[[
@@ -1606,7 +1605,7 @@ function map.handleEvents(dt)
 			if numPassengersDroppedOff >= MAX_NUM_PASSENGERS and GAME_TYPE == GAME_TYPE_MAX_PASSENGERS then
 				map.endRound()
 			end
-		
+
 			if (curMap.time >= ROUND_TIME and GAME_TYPE == GAME_TYPE_TIME) or CL_ROUND_TIME and (curMap.time >= CL_ROUND_TIME) then
 				map.endRound()
 			end

@@ -367,7 +367,7 @@ function menu.renderTrainImages()
 		local packet = 	t.cOut:pop()
 		if packet then
 			if packet.key == "status" then
-				print("Image Thread:", status)
+				--print("Image Thread:", status)
 				if packet[1] == "done" then
 					trainImageThreads[k] = nil
 					currentNumImageThreads = currentNumImageThreads - 1

@@ -19,7 +19,7 @@ local height = args[4]
 local seed = args[5]
 local tutorialMap = args[6]
 
-print("tutorialMap:", type(tutorialMap) )
+--print("tutorialMap:", type(tutorialMap) )
 local region = args[7]
 
 print = function(...)

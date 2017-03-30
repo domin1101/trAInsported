@@ -26,7 +26,12 @@ ai_currentLines = 0
 hookfunctionMetatable = {}	-- dummy table to compare against.
 
 function newLineCountHook( maxLines )
-	local startTime = love.timer.getTime()
+	local startTime
+	if love.timer then
+		startTime = love.timer.getTime()
+	else
+		startTime = 0
+	end
 	local time = 0
 	local lines = 0
 	linesUsed = 0
@@ -36,7 +41,11 @@ function newLineCountHook( maxLines )
 		if event == "line" then
 			lines = lines + 1
 			linesUsed = linesUsed + 1
-			time = love.timer.getTime()
+			if love.timer then
+				time = love.timer.getTime()
+			else
+				time = 0
+			end
 			if lines == maxLines then
 				err = {msg="Taking too long, stopping. Time taken: " .. math.floor((time-startTime)*1000000)/1000 .. " ms."}
 				setmetatable(err, hookfunctionMetatable)
@@ -79,7 +88,8 @@ end
 
 local function safelyLoadAI(chunk, scriptName, sb)
 
-	print("\tCompiling code...")
+	----print("\tCompiling code...")
+
 	debug.sethook(newLineCountHook(MAX_LINES_LOADING), "l")
 	local func, message = loadstring( "TRAINSPORTED = true;" .. chunk, scriptName)
 	debug.sethook()
@@ -89,21 +99,21 @@ local function safelyLoadAI(chunk, scriptName, sb)
 		console.add("Could not load script: (" .. s .. "): " .. message, {r=255,g=50,b=50})
 		coroutine.yield()
 	end
-	print("\t\tSuccess! Code lines: " .. linesUsed .. " of " .. MAX_LINES_LOADING)
+	----print("\t\tSuccess! Code lines: " .. linesUsed .. " of " .. MAX_LINES_LOADING)
 	
 	
-	print("\tRunning code:")
+	----print("\tRunning code:")
 	func = setfenv(func, sb)
 	debug.sethook(newLineCountHook(MAX_LINES_LOADING), "l")
 	local ok, message = xpcall(func, traceback)
 	if not ok then
-		--print("Could not execute script: \n", message)
+		----print("Could not execute script: \n", message)
 		local s = scriptName:gsub(".*/", "")
 		console.add("Could not execute script: (" .. s .. "): " .. message, {r=255,g=50,b=50})
 		coroutine.yield()
 	end
 	debug.sethook()
-	print("\t\tSuccess! Code lines: " .. linesUsed .. " of " .. MAX_LINES_LOADING)
+	----print("\t\tSuccess! Code lines: " .. linesUsed .. " of " .. MAX_LINES_LOADING)
 end
 
 	
@@ -140,7 +150,7 @@ end
 
 function ai.new(scriptName)
 	--local ok, chunk = pcall(love.filesystem.read, scriptName
-	print("ScriptName:", scriptName)
+	--print("ScriptName:", scriptName)
 	local ok, chunk = false, false
 	fh = io.open( scriptName,"r")
 	if fh and fh.read then
@@ -174,7 +184,7 @@ function ai.new(scriptName)
 			aiID = i
 			aiList[i] =	copyTable(aiUserData)
 			local s,e, name = scriptName:find(".*/(.*)%.lua")
-			print("NAME:",name)
+			--print("NAME:",name)
 			
 			e = e or 0
 			aiList[i].name = name
@@ -184,7 +194,7 @@ function ai.new(scriptName)
 			if owner == name and not DEDICATED then
 				s,e, owner = scriptName:find(".*/(.-)/(.-)/")
 			end
-			print("OWNER:",owner)
+			--print("OWNER:",owner)
 			aiList[i].owner = owner or "Unknown"
 			break
 		end
@@ -202,7 +212,7 @@ function ai.new(scriptName)
 		error("\tCoroutine stopped prematurely: " .. aiList[aiID].name)
 	end
 	crLoad = nil
-	print("\tAI loaded.")
+	--print("\tAI loaded.")
 	
 	aiList[aiID].init = sb.ai.init		-- if it all went right, now we can set the table.
 	aiList[aiID].chooseDirection = sb.ai.chooseDirection
@@ -220,13 +230,13 @@ end
 
 
 
-function ai.init()
+function ai.init(individuals)
 	for aiID = 1, #aiList do
 		--the second coroutine loads the ai.init() function in the user's AI script:
-		print("Initialising AI:", "ID: " .. aiID, "Name: ", aiList[aiID].name, aiList[aiID].scriptName)
+		--print("Initialising AI:", "ID: " .. aiID, "Name: ", aiList[aiID].name, aiList[aiID].scriptName)
 		if aiList[aiID].init then
 			local crInit = coroutine.create(runAiFunctionCoroutine)
-			ok, msg = coroutine.resume(crInit, aiList[aiID].init, MAX_LINES_LOADING, copyTable(curMap), stats.getMoney(aiID), MAX_NUM_TRAINS)
+			ok, msg = coroutine.resume(crInit, aiList[aiID].init, MAX_LINES_LOADING, copyTable(curMap), stats.getMoney(aiID), MAX_NUM_TRAINS, individuals[aiID].parameters)
 			if not ok then print("NEW ERROR:", msg) end
 			if coroutine.status(crInit) ~= "dead" then
 				crInit = nil
@@ -237,7 +247,7 @@ function ai.init()
 				end
 			end
 		else
-			print("\tNo ai.init() function found for this AI")
+			--print("\tNo ai.init() function found for this AI")
 			console.add("No ai.init() found for " .. aiList[aiID].name .. ".", {r=255,g=150,b=80})
 		end
 		crInit = nil
@@ -532,9 +542,8 @@ function ai.findAvailableAIs(randomize)
 		
 		--local directory = love.filesystem.getWorkingDirectory()
 		--local files = findAIs(directory)
-		print("Searching: ", AI_DIRECTORY)
+		--print("Searching: ", AI_DIRECTORY)
 		local files = scandir(AI_DIRECTORY)
-		
 		--if #files < 1 then
 		--	files = 
 		--end
@@ -586,7 +595,7 @@ function ai.backupTutorialAI( fileName )
 		love.filesystem.write( "AI/" .. fileName:sub(1, #fileName-4) .. "-(" .. os.time() .. ")-Backup.lua", content)
 		--file:write(contents)
 		--file:close()
-		print("Backed up tutorial AI to: " .. "AI/" .. fileName:sub(1, #fileName-4) .. "-(" .. os.time() .. ")-Backup.lua" )
+		--print("Backed up tutorial AI to: " .. "AI/" .. fileName:sub(1, #fileName-4) .. "-(" .. os.time() .. ")-Backup.lua" )
 
 		statusMsg.new("Found old AI for this tutorial!\nBacked up to:" .. "AI/" .. fileName:sub(1, #fileName-4) .. "-(" .. os.time() .. ")-Backup.lua", true)
 	end
@@ -595,18 +604,18 @@ end
 
 function ai.createNewTutAI( fileName, fileContent)
 	ai.backupTutorialAI( fileName )
-	print("Attempt to create tutorial file:", fileName)
-	print("Path:", AI_DIRECTORY .. fileName)
+	--print("Attempt to create tutorial file:", fileName)
+	--print("Path:", AI_DIRECTORY .. fileName)
 
 	love.filesystem.write( "AI/" .. fileName, fileContent )
 	--[[file = io.open( AI_DIRECTORY .. fileName, "w")
 	if not file then
-		print("Path2:", "AI/" .. fileName)
+		--print("Path2:", "AI/" .. fileName)
 		file = io.open( "AI/" .. fileName, "w")
 	end
-	print("File result2:", file)
+	--print("File result2:", file)
 	if file then
-		print("Writing to tut file:", fileContent:sub(1, 20) .. "...")
+		--print("Writing to tut file:", fileContent:sub(1, 20) .. "...")
 		file:write(fileContent)
 		file:close()
 	end]]

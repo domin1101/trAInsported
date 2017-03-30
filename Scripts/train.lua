@@ -59,7 +59,7 @@ function train.init()
 end
 
 function train.resetImages()
-	print("RESETTING TRAIN IMG")
+	--print("RESETTING TRAIN IMG")
 	trainImages = {}
 end
 
@@ -75,7 +75,7 @@ end
 
 function train.renderTrainImage( name, ID )
 	if name and ID then
-		print("starting thread...train.renderTrainImage", name .. ".lua")
+		--print("starting thread...train.renderTrainImage", name .. ".lua")
 		--col = generateColour(name .. ".lua", 1)
 		local thread = love.thread.newThread("Scripts/renderTrainImage.lua")
 		local cIn = love.thread.newChannel()
@@ -99,7 +99,7 @@ function train.renderTrainImage( name, ID )
 			local packet = t.cOut:pop()
 			if packet then
 				if packet.key == "status" then
-					print("Image Thread:", status)
+					--print("Image Thread:", status)
 					if packet[1] == "done" then
 						trainImageThreads[k] = nil
 						numTrainImageThreads = numTrainImageThreads - 1
@@ -589,7 +589,7 @@ function train.moveAll(passedTime)
 			tr.timeBlocked = tr.timeBlocked + t
 		end
 	end
-	
+
 	for k, list in pairs(trainList) do	-- TO DO move through train lists in random order!
 		for k, tr in pairs(list) do
 			if tr.hasMoved == false then
