@@ -155,9 +155,12 @@ function newGame()
 
 	local chosenAIs = {}
 
-	for i=1,4 do
-		chosenAIs[i] = "WinKI_Evol.lua"
-	end
+
+	chosenAIs[1] = "WinKI_Evol.lua"
+	chosenAIs[2] = "AI_Rechenknecht_V2.lua"
+	chosenAIs[3] = "czAI20.lua"
+	chosenAIs[4] = "Marvin2.lua"
+
 
 	evolution.prepareNextMatch()
 
@@ -315,7 +318,7 @@ if DEDICATED then
 					io.write( "Waiting for round to end: 0.00 seconds.","\r") io.flush()
 				end
 				if timeUntilMatchEnd <= 0 then
-					print("")		--jump to newline!
+					--print("")		--jump to newline!
 				end
 			else
 				-- wait for delay to be over
@@ -327,7 +330,7 @@ if DEDICATED then
 				-- possibly start next match:
 				if timeUntilNextMatch <= 0 then
 
-					print("")		--jump to newline!
+					--print("")		--jump to newline!
 
 					--stats.generateChart()
 
@@ -368,9 +371,9 @@ if DEDICATED then
 		end
 
 		--limit FPS:
-		if dt < 1/15 then
-			--love.timer.sleep(1/15 - dt)
-		end
+		--if dt < 1/15 then
+			--love.timer.sleep(1/15)
+		--end
 
 	end
 

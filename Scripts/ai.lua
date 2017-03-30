@@ -236,7 +236,12 @@ function ai.init(individuals)
 		--print("Initialising AI:", "ID: " .. aiID, "Name: ", aiList[aiID].name, aiList[aiID].scriptName)
 		if aiList[aiID].init then
 			local crInit = coroutine.create(runAiFunctionCoroutine)
-			ok, msg = coroutine.resume(crInit, aiList[aiID].init, MAX_LINES_LOADING, copyTable(curMap), stats.getMoney(aiID), MAX_NUM_TRAINS, individuals[aiID].parameters)
+			if aiID <= #individuals then
+				parameters = individuals[aiID].parameters
+			else
+				parameters = nil
+			end
+			ok, msg = coroutine.resume(crInit, aiList[aiID].init, MAX_LINES_LOADING, copyTable(curMap), stats.getMoney(aiID), MAX_NUM_TRAINS, parameters)
 			if not ok then print("NEW ERROR:", msg) end
 			if coroutine.status(crInit) ~= "dead" then
 				crInit = nil

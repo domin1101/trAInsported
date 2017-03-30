@@ -1,7 +1,7 @@
 
-INDIVIDUALS_NUMBER = 16
+INDIVIDUALS_NUMBER = 8
 PARAMETER_NUMBER = 3
-MATCH_SIZE = 4
+MATCH_SIZE = 1
 
 matchIndividuals = {}
 currentLevel = {}
@@ -10,7 +10,8 @@ individualIndex = 1
 levelNo = 1
 evolution = {}
 nextId = 1
-parameterStart = {[1]=0.2, [2]=1, [3]=1}
+parameterStart = {[1]=0.2, [2]=1, [3]=1 }
+matchesPerIndividual = 10
 
 function swap(array, index1, index2)
     array[index1], array[index2] = array[index2], array[index1]
@@ -35,7 +36,7 @@ function evolution.initialize()
 		individuals[i] = {["id"]=nextId,["parameters"]={},["mutationStrength"]={},["fitness"]=0}
 		nextId = nextId + 1
 		for r=1,PARAMETER_NUMBER do
-			individuals[i].parameters[r] = math.random() -- parameterStart[r]
+			individuals[i].parameters[r] = 0.5 -- math.random() -- parameterStart[r]
 			individuals[i].mutationStrength[r] = 0.2
 			text = text .. " " .. individuals[i].parameters[r]
 		end
@@ -47,6 +48,8 @@ end
 function evolution.initializeTournament()
 	print("Starting new tournament")
 	for i = 1,INDIVIDUALS_NUMBER do
+		individuals[i].fitness = 0
+		individuals[i].subFitness = 0
 		nextLevel[i] = individuals[i]
 	end
 	levelNo = -1
@@ -65,14 +68,16 @@ end
 function evolution.determineNextMatch()
 	local text = ""
 	for i = 1,MATCH_SIZE do
-		matchIndividuals[i] = currentLevel[individualIndex]
+		matchIndividuals[i] = currentLevel[math.floor((individualIndex - 1) / matchesPerIndividual) + 1]
 		individualIndex = individualIndex + 1
 		text = text .. " " .. matchIndividuals[i].id
-		if individualIndex > #currentLevel then
+		if individualIndex > #currentLevel * matchesPerIndividual then
 			break
 		end
 	end
-	print("Next match:", text)
+	if (individualIndex - 2) % matchesPerIndividual == 0 then
+		print("Next match:", text)
+	end
 end
 
 function evolution.processMatchResults()
@@ -82,13 +87,15 @@ function evolution.processMatchResults()
 	table.sort(aiList, function(a,b) return a.points > b.points end)
 	local text = ""
 	for i = 1,#aiList do
-		if i <= 2 then
-			table.insert(nextLevel, matchIndividuals[aiList[i].id])
-			text = text .. " " .. matchIndividuals[aiList[i].id].id .. "(" .. aiStats[aiList[i].id].pTransported .. ")"
-			evolution.individualById(matchIndividuals[aiList[i].id].id).fitness = levelNo + 1
+		if aiList[i].id == 1 then
+			matchIndividuals[1].fitness = matchIndividuals[1].fitness + i
+			matchIndividuals[1].subFitness = matchIndividuals[1].subFitness + aiStats[1].pTransported
+			text = text .. " " .. matchIndividuals[1].id .. " " .. matchIndividuals[1].fitness .. "(" .. matchIndividuals[1].subFitness .. ")"
 		end
 	end
-	print("Winner:", text)
+	if (individualIndex - 1) % matchesPerIndividual == 0 then
+		print("Result:", text)
+	end
 end
 
 function evolution.individualById(id)
@@ -107,8 +114,8 @@ function evolution.reuse(number)
 end
 
 function evolution.mutate()
-	for i = 1,#individuals do
-		for n = 1,individuals[i].fitness do
+	for i = 1,3 do
+		for n = 1,4-i do
 			newIndividual = {["id"]=nextId,["parameters"]={},["mutationStrength"]={},["fitness"]=0}
 			nextId = nextId + 1
 			for r=1,PARAMETER_NUMBER do
@@ -121,11 +128,24 @@ function evolution.mutate()
 	end
 end
 
+function evolution.create(number)
+	for i = 1,number do
+		newIndividual = {["id"]=nextId,["parameters"]={},["mutationStrength"]={},["fitness"]=0}
+		for r=1,PARAMETER_NUMBER do
+			newIndividual.parameters[r] = math.random()
+			newIndividual.mutationStrength[r] = 0.2
+		end
+		table.insert(newIndividuals, newIndividual)
+	end
+end
+
+
 function evolution.doEvolution()
 	newIndividuals = {}
-	table.sort(individuals, function(a,b) return a.fitness > b.fitness end)
-	evolution.reuse(2)
+	table.sort(individuals, function(a,b) return a.fitness < b.fitness or (a.fitness == b.fitness and a.subFitness > b.subFitness) end)
+	evolution.reuse(1)
 	evolution.mutate()
+	evolution.create(1)
 	individuals = newIndividuals
 	for i = 1,#individuals do
 		individuals[i].fitness = 0
@@ -161,8 +181,8 @@ function evolution.prepareNextMatch()
 		evolution.processMatchResults()
 	end
 
-	if individualIndex > #currentLevel then
-		if #nextLevel < MATCH_SIZE then
+	if individualIndex > #currentLevel * matchesPerIndividual then
+		if true or #nextLevel < MATCH_SIZE then
 			print("Tournament has finished")
 			evolution.doEvolution()
 			evolution.initializeTournament()
