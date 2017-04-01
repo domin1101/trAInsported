@@ -150,16 +150,18 @@ function newGame()
 		return
 	end
 
-	local width = 6--math.random(MAP_MINIMUM_SIZE,MAP_MAXIMUM_SIZE)
-	local height = 6--math.random(MAP_MINIMUM_SIZE,MAP_MAXIMUM_SIZE)
+	local width = (individualIndex - 1) % matchesPerIndividual + 4--math.random(MAP_MINIMUM_SIZE,MAP_MAXIMUM_SIZE)
+	local height = (individualIndex - 1) % matchesPerIndividual + 4--math.random(MAP_MINIMUM_SIZE,MAP_MAXIMUM_SIZE)
 
 	local chosenAIs = {}
 
 
 	chosenAIs[1] = "WinKI_Evol.lua"
-	chosenAIs[2] = "AI_Rechenknecht_V2.lua"
-	chosenAIs[3] = "czAI20.lua"
-	chosenAIs[4] = "Marvin2.lua"
+	if DEDICATED then
+		chosenAIs[2] = "AI_Rechenknecht_V2.lua"
+		chosenAIs[3] = "czAI20.lua"
+		chosenAIs[4] = "Marvin2.lua"
+	end
 
 
 	evolution.prepareNextMatch()

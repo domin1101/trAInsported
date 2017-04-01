@@ -10,8 +10,11 @@ individualIndex = 1
 levelNo = 1
 evolution = {}
 nextId = 1
-parameterStart = {[1]=0.2, [2]=1, [3]=1 }
-matchesPerIndividual = 10
+parameterStart = {[1]=34.051066527002, [2]=0.39951273972062, [3]=2.1531058245308 }
+parameterStartOld = {[1]=0.2, [2]=1, [3]=1 }
+matchesPerIndividual = 9
+tournamentNo = 0
+local debug = false
 
 function swap(array, index1, index2)
     array[index1], array[index2] = array[index2], array[index1]
@@ -36,29 +39,36 @@ function evolution.initialize()
 		individuals[i] = {["id"]=nextId,["parameters"]={},["mutationStrength"]={},["fitness"]=0}
 		nextId = nextId + 1
 		for r=1,PARAMETER_NUMBER do
-			individuals[i].parameters[r] = 0.5 -- math.random() -- parameterStart[r]
+			individuals[i].parameters[r] =math.random() -- parameterStartOld[r]
 			individuals[i].mutationStrength[r] = 0.2
 			text = text .. " " .. individuals[i].parameters[r]
 		end
 	end
-	print("Parameters:", text)
+	if debug then
+		print("Parameters:", text)
+	end
 	evolution.initializeTournament()
 end
 
 function evolution.initializeTournament()
-	print("Starting new tournament")
+	if debug then
+		print("Starting new tournament")
+	end
 	for i = 1,INDIVIDUALS_NUMBER do
 		individuals[i].fitness = 0
 		individuals[i].subFitness = 0
 		nextLevel[i] = individuals[i]
 	end
 	levelNo = -1
+	tournamentNo = tournamentNo + 1
 	evolution.nextLevel()
 end
 
 function evolution.nextLevel()
 	levelNo = levelNo + 1
-	print("Starting next Level", levelNo)
+	if debug then
+		print("Starting next Level", levelNo)
+	end
 	currentLevel = nextLevel
 	nextLevel = {}
 	shuffle(currentLevel)
@@ -75,7 +85,7 @@ function evolution.determineNextMatch()
 			break
 		end
 	end
-	if (individualIndex - 2) % matchesPerIndividual == 0 then
+	if debug and (individualIndex - 2) % matchesPerIndividual == 0 then
 		print("Next match:", text)
 	end
 end
@@ -93,7 +103,7 @@ function evolution.processMatchResults()
 			text = text .. " " .. matchIndividuals[1].id .. " " .. matchIndividuals[1].fitness .. "(" .. matchIndividuals[1].subFitness .. ")"
 		end
 	end
-	if (individualIndex - 1) % matchesPerIndividual == 0 then
+	if debug and (individualIndex - 1) % matchesPerIndividual == 0 then
 		print("Result:", text)
 	end
 end
@@ -143,6 +153,13 @@ end
 function evolution.doEvolution()
 	newIndividuals = {}
 	table.sort(individuals, function(a,b) return a.fitness < b.fitness or (a.fitness == b.fitness and a.subFitness > b.subFitness) end)
+
+	median = 0
+	for i = 1,#individuals do
+		median = median + individuals[i].fitness
+	end
+	print(tournamentNo, median / (#individuals * matchesPerIndividual))
+
 	evolution.reuse(1)
 	evolution.mutate()
 	evolution.create(1)
@@ -157,7 +174,14 @@ function evolution.printGeneration()
 	ids = ""
 	param = ""
 	strength = ""
-	for i=1,#individuals do
+
+	if debug then
+		number = #individuals
+	else
+		number = 1
+	end
+
+	for i=1,number do
 		ids = ids .. " " .. individuals[i].id
 		param = param .. " [ "
 		strength = strength .. " [ "
@@ -183,7 +207,9 @@ function evolution.prepareNextMatch()
 
 	if individualIndex > #currentLevel * matchesPerIndividual then
 		if true or #nextLevel < MATCH_SIZE then
-			print("Tournament has finished")
+			if debug then
+				print("Tournament has finished")
+			end
 			evolution.doEvolution()
 			evolution.initializeTournament()
 			--os.exit()
